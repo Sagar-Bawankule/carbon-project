@@ -14,6 +14,7 @@ import History from './pages/History';
 import Recommendations from './pages/Recommendations';
 import Leaderboard from './pages/Leaderboard';
 import WeeklyReport from './pages/WeeklyReport';
+import Shop from './pages/Shop';
 
 // Components
 import Layout from './components/Layout';
@@ -115,6 +116,7 @@ function AppRoutes() {
         <Route path="recommendations" element={<Recommendations />} />
         <Route path="leaderboard" element={<Leaderboard />} />
         <Route path="reports" element={<WeeklyReport />} />
+        <Route path="shop" element={<Shop />} />
       </Route>
 
       {/* Legacy redirects */}

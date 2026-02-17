@@ -80,4 +80,17 @@ export const reportAPI = {
   getMonthlyReport: () => api.get('/reports/monthly'),
 };
 
+// Reward API
+export const rewardAPI = {
+  getStatus: () => api.get('/rewards/status'),
+  claim: () => api.post('/rewards/claim'),
+};
+
+// Shop API
+export const shopAPI = {
+  getItems: () => api.get('/shop/items'),
+  redeem: (shopItemId) => api.post('/shop/redeem', { shopItemId }),
+  seed: () => api.post('/shop/seed'),
+};
+
 export default api;

@@ -11,7 +11,8 @@ import {
   HiMenu,
   HiX,
   HiUser,
-  HiDocumentReport
+  HiDocumentReport,
+  HiShoppingBag
 } from 'react-icons/hi';
 import { FaLeaf, FaTrophy } from 'react-icons/fa';
 
@@ -22,6 +23,7 @@ const navItems = [
   { path: '/app/reports', name: 'Weekly Report', icon: HiDocumentReport },
   { path: '/app/recommendations', name: 'Recommendations', icon: HiLightBulb },
   { path: '/app/leaderboard', name: 'Leaderboard', icon: FaTrophy },
+  { path: '/app/shop', name: 'Rewards Shop', icon: HiShoppingBag },
 ];
 
 const Layout = () => {

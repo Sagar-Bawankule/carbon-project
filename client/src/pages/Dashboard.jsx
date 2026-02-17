@@ -11,6 +11,7 @@ import RecommendationCard from '../components/RecommendationCard';
 import TrendChart from '../components/TrendChart';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EnhancedCharts from '../components/EnhancedCharts';
+import RewardsCard from '../components/RewardsCard';
 
 import {
   HiTrendingUp,
@@ -99,42 +100,52 @@ const Dashboard = () => {
 
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Carbon Dial Section */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.1 }}
-          className="lg:col-span-1 card p-6 flex flex-col items-center justify-center"
-        >
-          <CarbonDial
-            current={goal?.currentTotal || 0}
-            limit={goal?.monthlyLimit || 500}
-            label="Monthly"
-            size="lg"
-          />
+        {/* Carbon Dial Section & Rewards */}
+        <div className="lg:col-span-1 space-y-6">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.1 }}
+            className="card p-6 flex flex-col items-center justify-center"
+          >
+            <CarbonDial
+              current={goal?.currentTotal || 0}
+              limit={goal?.monthlyLimit || 500}
+              label="Monthly"
+              size="lg"
+            />
 
-          {/* Comparison */}
-          {monthly && (
-            <div className="mt-4 flex items-center gap-2 text-sm">
-              {monthly.comparison >= 0 ? (
-                <>
-                  <HiTrendingUp className="w-5 h-5 text-red-500" />
-                  <span className="text-red-600 font-medium">
-                    {monthly.comparison}% more
-                  </span>
-                </>
-              ) : (
-                <>
-                  <HiTrendingDown className="w-5 h-5 text-eco-500" />
-                  <span className="text-eco-600 font-medium">
-                    {Math.abs(monthly.comparison)}% less
-                  </span>
-                </>
-              )}
-              <span className="text-slate-500">than last month</span>
-            </div>
-          )}
-        </motion.div>
+            {/* Comparison */}
+            {monthly && (
+              <div className="mt-4 flex items-center gap-2 text-sm">
+                {monthly.comparison >= 0 ? (
+                  <>
+                    <HiTrendingUp className="w-5 h-5 text-red-500" />
+                    <span className="text-red-600 font-medium">
+                      {monthly.comparison}% more
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <HiTrendingDown className="w-5 h-5 text-eco-500" />
+                    <span className="text-eco-600 font-medium">
+                      {Math.abs(monthly.comparison)}% less
+                    </span>
+                  </>
+                )}
+                <span className="text-slate-500">than last month</span>
+              </div>
+            )}
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <RewardsCard />
+          </motion.div>
+        </div>
 
         {/* Today's Summary & Categories */}
         <motion.div

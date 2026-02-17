@@ -48,11 +48,26 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  tokens: {
+    type: Number,
+    default: 0
+  },
+  monthlyLimit: {
+    type: Number,
+    default: 500 // 500kg CO2 default limit
+  },
+  totalCo2Saved: {
+    type: Number,
+    default: 0
+  },
+  lastRewardClaimDate: {
+    type: Date
   }
 });
 
 // Hash password before saving
-userSchema.pre('save', async function(next) {
+userSchema.pre('save', async function (next) {
   if (!this.isModified('passwordHash')) {
     next();
   }
@@ -61,7 +76,7 @@ userSchema.pre('save', async function(next) {
 });
 
 // Match password
-userSchema.methods.matchPassword = async function(enteredPassword) {
+userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.passwordHash);
 };
 

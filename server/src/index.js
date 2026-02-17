@@ -10,6 +10,8 @@ const goalRoutes = require('./routes/goals');
 const aiRoutes = require('./routes/ai');
 const groupRoutes = require('./routes/groups');
 const reportRoutes = require('./routes/reports');
+const rewardRoutes = require('./routes/rewards');
+const shopRoutes = require('./routes/shop');
 
 // Initialize express
 const app = express();
@@ -21,6 +23,7 @@ connectDB();
 app.use(cors({
   origin: ['http://localhost:3000', 'http://localhost:5173'],
   credentials: true,
+  // origin: '*',
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -32,6 +35,8 @@ app.use('/api/goals', goalRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/reports', reportRoutes);
+app.use('/api/rewards', rewardRoutes);
+app.use('/api/shop', shopRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
