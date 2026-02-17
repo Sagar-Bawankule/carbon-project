@@ -11,14 +11,17 @@ import {
   HiMenu,
   HiX,
   HiUser,
+  HiDocumentReport
 } from 'react-icons/hi';
-import { FaLeaf } from 'react-icons/fa';
+import { FaLeaf, FaTrophy } from 'react-icons/fa';
 
 const navItems = [
   { path: '/app/dashboard', name: 'Dashboard', icon: HiHome },
   { path: '/app/input', name: 'Input Activity', icon: HiPlusCircle },
   { path: '/app/history', name: 'History', icon: HiClock },
+  { path: '/app/reports', name: 'Weekly Report', icon: HiDocumentReport },
   { path: '/app/recommendations', name: 'Recommendations', icon: HiLightBulb },
+  { path: '/app/leaderboard', name: 'Leaderboard', icon: FaTrophy },
 ];
 
 const Layout = () => {
@@ -109,19 +112,17 @@ const Layout = () => {
               to={item.path}
               onClick={() => setSidebarOpen(false)}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                  isActive
-                    ? 'bg-eco-50 text-eco-700'
-                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
+                `flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${isActive
+                  ? 'bg-eco-50 text-eco-700'
+                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-800'
                 }`
               }
             >
               {({ isActive }) => (
                 <>
                   <item.icon
-                    className={`w-5 h-5 ${
-                      isActive ? 'text-eco-500' : 'text-slate-400'
-                    }`}
+                    className={`w-5 h-5 ${isActive ? 'text-eco-500' : 'text-slate-400'
+                      }`}
                   />
                   <span>{item.name}</span>
                   {isActive && (

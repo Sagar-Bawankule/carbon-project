@@ -29,9 +29,21 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export const TrendChart = ({ data, height = 300, showCategories = false }) => {
+  if (!data || !Array.isArray(data) || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center" style={{ height }}>
+        <p className="text-slate-400 text-sm">No trend data available</p>
+      </div>
+    );
+  }
+
   const formatDate = (dateStr) => {
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    try {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    } catch {
+      return '';
+    }
   };
 
   const formattedData = data.map((item) => ({

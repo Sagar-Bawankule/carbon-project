@@ -8,6 +8,8 @@ const authRoutes = require('./routes/auth');
 const activityRoutes = require('./routes/activities');
 const goalRoutes = require('./routes/goals');
 const aiRoutes = require('./routes/ai');
+const groupRoutes = require('./routes/groups');
+const reportRoutes = require('./routes/reports');
 
 // Initialize express
 const app = express();
@@ -28,6 +30,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/activities', activityRoutes);
 app.use('/api/goals', goalRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/groups', groupRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

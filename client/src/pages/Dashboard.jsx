@@ -10,6 +10,7 @@ import CategoryCard from '../components/CategoryCard';
 import RecommendationCard from '../components/RecommendationCard';
 import TrendChart from '../components/TrendChart';
 import LoadingSpinner from '../components/LoadingSpinner';
+import EnhancedCharts from '../components/EnhancedCharts';
 
 import {
   HiTrendingUp,
@@ -172,11 +173,10 @@ const Dashboard = () => {
               </div>
               <div className="text-right">
                 <span
-                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                    (today?.percentage || 0) <= 100
-                      ? 'bg-eco-100 text-eco-700'
-                      : 'bg-red-100 text-red-700'
-                  }`}
+                  className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${(today?.percentage || 0) <= 100
+                    ? 'bg-eco-100 text-eco-700'
+                    : 'bg-red-100 text-red-700'
+                    }`}
                 >
                   {today?.percentage || 0}% of daily
                 </span>
@@ -189,13 +189,12 @@ const Dashboard = () => {
                 initial={{ width: 0 }}
                 animate={{ width: `${Math.min(today?.percentage || 0, 100)}%` }}
                 transition={{ duration: 1, ease: 'easeOut' }}
-                className={`h-full rounded-full ${
-                  (today?.percentage || 0) <= 80
-                    ? 'bg-eco-500'
-                    : (today?.percentage || 0) <= 100
+                className={`h-full rounded-full ${(today?.percentage || 0) <= 80
+                  ? 'bg-eco-500'
+                  : (today?.percentage || 0) <= 100
                     ? 'bg-amber-500'
                     : 'bg-red-500'
-                }`}
+                  }`}
               />
             </div>
           </div>
@@ -249,21 +248,19 @@ const Dashboard = () => {
           <div className="flex bg-slate-100 rounded-lg p-1">
             <button
               onClick={() => handleChartViewChange('weekly')}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                chartView === 'weekly'
-                  ? 'bg-white text-eco-600 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-800'
-              }`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${chartView === 'weekly'
+                ? 'bg-white text-eco-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-800'
+                }`}
             >
               7 Days
             </button>
             <button
               onClick={() => handleChartViewChange('monthly')}
-              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                chartView === 'monthly'
-                  ? 'bg-white text-eco-600 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-800'
-              }`}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${chartView === 'monthly'
+                ? 'bg-white text-eco-600 shadow-sm'
+                : 'text-slate-600 hover:text-slate-800'
+                }`}
             >
               30 Days
             </button>
@@ -280,6 +277,15 @@ const Dashboard = () => {
             </div>
           </div>
         )}
+      </motion.div>
+
+      {/* Enhanced Charts */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+      >
+        <EnhancedCharts />
       </motion.div>
 
       {/* Recommendations */}

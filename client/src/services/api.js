@@ -64,4 +64,20 @@ export const goalAPI = {
   getEmissionFactors: () => api.get('/goals/emission-factors'),
 };
 
+// Group API
+export const groupAPI = {
+  createGroup: (data) => api.post('/groups', data),
+  joinGroup: (data) => api.post('/groups/join', data),
+  getMyGroups: () => api.get('/groups'),
+  getLeaderboard: (groupId, period = 'month') => api.get(`/groups/${groupId}/leaderboard?period=${period}`),
+  leaveGroup: (groupId) => api.delete(`/groups/${groupId}/leave`),
+  deleteGroup: (groupId) => api.delete(`/groups/${groupId}`),
+};
+
+// Report API
+export const reportAPI = {
+  getWeeklyReport: () => api.get('/reports/weekly'),
+  getMonthlyReport: () => api.get('/reports/monthly'),
+};
+
 export default api;
