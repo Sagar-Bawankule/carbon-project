@@ -29,10 +29,15 @@ const indiaEmissionFactors = require('../config/indiaEmissionFactors');
  *    - AI-powered personalized eco recommendations
  */
 
-// API Keys from environment
-const ELECTRICITY_MAPS_API_KEY = process.env.ELECTRICITY_MAPS_API_KEY || 'uo8jDShLB8XscgmvWPMP';
-const CARBON_INTERFACE_API_KEY = process.env.CARBON_INTERFACE_API_KEY || 'vzApz6RxhQKfpfLUw4ifQ';
-const GROK_API_KEY = process.env.GROK_API_KEY || 'xai-inyDvx85RnbaSLVDABomiC6XiPdm8ECELSDJ7OFLLs6Apjb4qEFlTe3gLs7MJ6IWlb7n1Iq0NRta6zW1';
+// API Keys — loaded exclusively from environment variables (never hardcoded)
+const ELECTRICITY_MAPS_API_KEY = process.env.ELECTRICITY_MAPS_API_KEY;
+const CARBON_INTERFACE_API_KEY = process.env.CARBON_INTERFACE_API_KEY;
+const GROK_API_KEY = process.env.GROK_API_KEY;
+
+// Warn at startup if any key is missing (will gracefully fall back in each function)
+if (!ELECTRICITY_MAPS_API_KEY) console.warn('⚠️  ELECTRICITY_MAPS_API_KEY is not set. Real-time grid data will use fallback values.');
+if (!CARBON_INTERFACE_API_KEY) console.warn('⚠️  CARBON_INTERFACE_API_KEY is not set. Vehicle/flight data will use local estimates.');
+if (!GROK_API_KEY) console.warn('⚠️  GROK_API_KEY is not set. AI recommendations will use local fallback tips.');
 
 // API URLs
 const ELECTRICITY_MAPS_URL = 'https://api.electricitymaps.com/v3';
@@ -49,10 +54,10 @@ const GROK_API_URL = 'https://api.x.ai/v1/chat/completions';
  */
 const getIndiaGridCarbonIntensity = async (zone = 'IN') => {
   // India zone codes: IN, IN-DL (Delhi), IN-MH (Maharashtra), IN-KA (Karnataka), etc.
-  
+
   try {
     console.log('🔌 Fetching real-time India grid carbon intensity...');
-    
+
     const response = await axios.get(
       `${ELECTRICITY_MAPS_URL}/carbon-intensity/latest`,
       {
@@ -63,7 +68,7 @@ const getIndiaGridCarbonIntensity = async (zone = 'IN') => {
     );
 
     console.log('✅ Electricity Maps API response received');
-    
+
     return {
       carbonIntensity: response.data.carbonIntensity, // gCO2eq/kWh
       zone: response.data.zone,
@@ -98,7 +103,7 @@ const getIndiaGridCarbonIntensity = async (zone = 'IN') => {
 const getVehicleEmissions = async (distanceKm, vehicleType = 'petrol_car') => {
   try {
     console.log('🚗 Fetching vehicle emissions from Carbon Interface...');
-    
+
     const response = await axios.post(
       `${CARBON_INTERFACE_URL}/estimates`,
       {
@@ -127,8 +132,8 @@ const getVehicleEmissions = async (distanceKm, vehicleType = 'petrol_car') => {
   } catch (error) {
     console.error('⚠️ Carbon Interface API error:', error.message);
     // Use local India factors as fallback
-    const factor = indiaEmissionFactors.transport[vehicleType] || 
-                   indiaEmissionFactors.transport.petrol_car;
+    const factor = indiaEmissionFactors.transport[vehicleType] ||
+      indiaEmissionFactors.transport.petrol_car;
     return {
       co2e_kg: distanceKm * factor,
       distance_km: distanceKm,
@@ -143,7 +148,7 @@ const getVehicleEmissions = async (distanceKm, vehicleType = 'petrol_car') => {
 const getFlightEmissions = async (originAirport, destinationAirport, passengers = 1) => {
   try {
     console.log('✈️ Fetching flight emissions from Carbon Interface...');
-    
+
     const response = await axios.post(
       `${CARBON_INTERFACE_URL}/estimates`,
       {
@@ -171,24 +176,24 @@ const getFlightEmissions = async (originAirport, destinationAirport, passengers 
     };
   } catch (error) {
     console.error('⚠️ Flight emissions API error:', error.message);
-    
+
     // Common India flight routes distances
     const commonRoutes = {
       'DEL-BOM': 1150, 'BOM-DEL': 1150,
       'DEL-BLR': 1740, 'BLR-DEL': 1740,
       'DEL-CCU': 1300, 'CCU-DEL': 1300,
-      'BOM-BLR': 845,  'BLR-BOM': 845,
+      'BOM-BLR': 845, 'BLR-BOM': 845,
       'DEL-MAA': 1760, 'MAA-DEL': 1760,
       'BOM-CCU': 1660, 'CCU-BOM': 1660,
       'DEL-HYD': 1260, 'HYD-DEL': 1260,
-      'BOM-HYD': 620,  'HYD-BOM': 620,
+      'BOM-HYD': 620, 'HYD-BOM': 620,
       'DEL-GOI': 1500, 'GOI-DEL': 1500,
-      'BOM-GOI': 440,  'GOI-BOM': 440,
+      'BOM-GOI': 440, 'GOI-BOM': 440,
     };
-    
+
     const routeKey = `${originAirport}-${destinationAirport}`;
     const distanceKm = commonRoutes[routeKey] || 1000;
-    
+
     return {
       co2e_kg: distanceKm * 0.255 * passengers,
       distance_km: distanceKm,
@@ -209,7 +214,7 @@ const getFlightEmissions = async (originAirport, destinationAirport, passengers 
 const getGrokRecommendations = async (userStats) => {
   try {
     console.log('🤖 Generating AI recommendations with Grok...');
-    
+
     const systemPrompt = `You are EcoTrack AI, an expert environmental advisor for Indian users. 
 Your role is to provide personalized, actionable recommendations to reduce carbon footprint.
 Focus on practical tips relevant to Indian lifestyle, climate, and available options.
@@ -263,10 +268,10 @@ Please provide personalized recommendations to help reduce their carbon footprin
     console.log('✅ Grok AI recommendations received');
 
     const aiResponse = response.data.choices[0].message.content;
-    
+
     // Parse recommendations into structured format
     const recommendations = parseGrokResponse(aiResponse, userStats);
-    
+
     return {
       success: true,
       rawResponse: aiResponse,
@@ -276,7 +281,7 @@ Please provide personalized recommendations to help reduce their carbon footprin
     };
   } catch (error) {
     console.error('⚠️ Grok AI error:', error.message);
-    
+
     // Return fallback recommendations
     return {
       success: false,
@@ -292,21 +297,21 @@ Please provide personalized recommendations to help reduce their carbon footprin
  */
 const parseGrokResponse = (response, userStats) => {
   const recommendations = [];
-  
+
   // Split response by common patterns
   const lines = response.split('\n').filter(line => line.trim());
-  
+
   let currentRec = null;
-  
+
   for (const line of lines) {
     // Check if it's a numbered recommendation
     const numberedMatch = line.match(/^(\d+[\.\)]|\-|\•|\*)\s*(.+)/);
-    
+
     if (numberedMatch) {
       if (currentRec) {
         recommendations.push(currentRec);
       }
-      
+
       const text = numberedMatch[2].trim();
       currentRec = {
         id: recommendations.length + 1,
@@ -320,11 +325,11 @@ const parseGrokResponse = (response, userStats) => {
       currentRec.text += ' ' + line.trim();
     }
   }
-  
+
   if (currentRec) {
     recommendations.push(currentRec);
   }
-  
+
   // If parsing failed, return as single recommendation
   if (recommendations.length === 0) {
     return [{
@@ -334,7 +339,7 @@ const parseGrokResponse = (response, userStats) => {
       priority: 'medium',
     }];
   }
-  
+
   return recommendations.slice(0, 5); // Max 5 recommendations
 };
 
@@ -343,28 +348,28 @@ const parseGrokResponse = (response, userStats) => {
  */
 const detectCategory = (text) => {
   const lower = text.toLowerCase();
-  
-  if (lower.includes('electric') || lower.includes('power') || lower.includes('ac') || 
-      lower.includes('fan') || lower.includes('led') || lower.includes('solar') ||
-      lower.includes('electricity') || lower.includes('energy')) {
+
+  if (lower.includes('electric') || lower.includes('power') || lower.includes('ac') ||
+    lower.includes('fan') || lower.includes('led') || lower.includes('solar') ||
+    lower.includes('electricity') || lower.includes('energy')) {
     return 'energy';
   }
-  if (lower.includes('car') || lower.includes('bike') || lower.includes('metro') || 
-      lower.includes('bus') || lower.includes('train') || lower.includes('walk') ||
-      lower.includes('cycle') || lower.includes('transport') || lower.includes('travel') ||
-      lower.includes('commute') || lower.includes('flight')) {
+  if (lower.includes('car') || lower.includes('bike') || lower.includes('metro') ||
+    lower.includes('bus') || lower.includes('train') || lower.includes('walk') ||
+    lower.includes('cycle') || lower.includes('transport') || lower.includes('travel') ||
+    lower.includes('commute') || lower.includes('flight')) {
     return 'transport';
   }
-  if (lower.includes('meat') || lower.includes('vegetarian') || lower.includes('food') || 
-      lower.includes('diet') || lower.includes('eat') || lower.includes('meal') ||
-      lower.includes('chicken') || lower.includes('mutton') || lower.includes('local')) {
+  if (lower.includes('meat') || lower.includes('vegetarian') || lower.includes('food') ||
+    lower.includes('diet') || lower.includes('eat') || lower.includes('meal') ||
+    lower.includes('chicken') || lower.includes('mutton') || lower.includes('local')) {
     return 'food';
   }
   if (lower.includes('shopping') || lower.includes('buy') || lower.includes('purchase') ||
-      lower.includes('reuse') || lower.includes('recycle') || lower.includes('clothes')) {
+    lower.includes('reuse') || lower.includes('recycle') || lower.includes('clothes')) {
     return 'goods';
   }
-  
+
   return 'general';
 };
 
@@ -373,17 +378,17 @@ const detectCategory = (text) => {
  */
 const detectPriority = (text, userStats) => {
   const category = detectCategory(text);
-  
+
   if (category === userStats.highestCategory) {
     return 'high';
   }
-  
-  if (text.toLowerCase().includes('immediately') || 
-      text.toLowerCase().includes('urgent') ||
-      text.toLowerCase().includes('significant')) {
+
+  if (text.toLowerCase().includes('immediately') ||
+    text.toLowerCase().includes('urgent') ||
+    text.toLowerCase().includes('significant')) {
     return 'high';
   }
-  
+
   return 'medium';
 };
 
@@ -396,12 +401,12 @@ const extractSavings = (text) => {
   if (kgMatch) {
     return { value: parseInt(kgMatch[1]), unit: 'kg CO₂e/month' };
   }
-  
+
   const percentMatch = text.match(/(\d+)\s*%/);
   if (percentMatch) {
     return { value: parseInt(percentMatch[1]), unit: '% reduction' };
   }
-  
+
   return null;
 };
 
@@ -410,7 +415,7 @@ const extractSavings = (text) => {
  */
 const getFallbackRecommendations = (userStats) => {
   const recommendations = [];
-  
+
   // Based on highest category
   if (userStats.highestCategory === 'transport' || userStats.transportPercent > 30) {
     recommendations.push({
@@ -421,7 +426,7 @@ const getFallbackRecommendations = (userStats) => {
       potentialSavings: { value: 50, unit: 'kg CO₂e/month' },
     });
   }
-  
+
   if (userStats.highestCategory === 'energy' || userStats.energyPercent > 30) {
     recommendations.push({
       id: 2,
@@ -431,7 +436,7 @@ const getFallbackRecommendations = (userStats) => {
       potentialSavings: { value: 30, unit: '% reduction' },
     });
   }
-  
+
   if (userStats.highestCategory === 'food' || userStats.foodPercent > 25) {
     recommendations.push({
       id: 3,
@@ -441,7 +446,7 @@ const getFallbackRecommendations = (userStats) => {
       potentialSavings: { value: 40, unit: '% reduction' },
     });
   }
-  
+
   // Add general recommendations
   recommendations.push({
     id: recommendations.length + 1,
@@ -450,7 +455,7 @@ const getFallbackRecommendations = (userStats) => {
     priority: 'medium',
     potentialSavings: { value: 5, unit: 'kg CO₂e/month' },
   });
-  
+
   recommendations.push({
     id: recommendations.length + 1,
     text: 'Unplug devices when not in use. Standby power consumption accounts for 5-10% of household electricity use in India.',
@@ -458,7 +463,7 @@ const getFallbackRecommendations = (userStats) => {
     priority: 'low',
     potentialSavings: { value: 10, unit: '% reduction' },
   });
-  
+
   return recommendations.slice(0, 5);
 };
 
@@ -472,13 +477,13 @@ const getQuickTip = async (category) => {
       {
         model: 'grok-4-latest',
         messages: [
-          { 
-            role: 'system', 
-            content: 'You are EcoTrack AI. Provide a single, short, actionable eco-tip for Indian users. Keep it under 100 characters.' 
+          {
+            role: 'system',
+            content: 'You are EcoTrack AI. Provide a single, short, actionable eco-tip for Indian users. Keep it under 100 characters.'
           },
-          { 
-            role: 'user', 
-            content: `Give me one quick tip to reduce ${category} carbon emissions in India.` 
+          {
+            role: 'user',
+            content: `Give me one quick tip to reduce ${category} carbon emissions in India.`
           }
         ],
         stream: false,
@@ -506,7 +511,7 @@ const getQuickTip = async (category) => {
       food: '🥗 One vegetarian day weekly saves 100kg CO₂ yearly.',
       goods: '♻️ Repair before replacing - extends product life & saves emissions.',
     };
-    
+
     return {
       tip: fallbackTips[category] || '🌱 Every small action counts towards a greener India!',
       category: category,
@@ -529,10 +534,10 @@ const getDigitalCarbonFootprint = async (dataTransferGB) => {
     // Dynamic import for CO2.js
     const { co2 } = await import('@tgwf/co2');
     const oneByte = new co2({ model: 'swd' }); // Sustainable Web Design model
-    
+
     const bytes = dataTransferGB * 1024 * 1024 * 1024;
     const emissions = oneByte.perByte(bytes, true); // green hosting = true
-    
+
     return {
       co2e_g: emissions,
       co2e_kg: emissions / 1000,
@@ -559,8 +564,8 @@ const getDigitalCarbonFootprint = async (dataTransferGB) => {
 const getStateElectricityFactor = (state) => {
   const stateLower = state.toLowerCase().replace(/\s+/g, '_');
   return {
-    factor: indiaEmissionFactors.stateElectricityFactors[stateLower] || 
-            indiaEmissionFactors.stateElectricityFactors.average,
+    factor: indiaEmissionFactors.stateElectricityFactors[stateLower] ||
+      indiaEmissionFactors.stateElectricityFactors.average,
     state: state,
     source: 'CEA India 2023-24',
   };
@@ -585,7 +590,7 @@ const getLPGEmissions = (cylindersUsed, cylinderWeightKg = 14.2) => {
 const getTwoWheelerEmissions = (distanceKm, fuelType = 'petrol') => {
   const factorKey = fuelType === 'electric' ? 'two_wheeler_electric' : 'two_wheeler_petrol';
   const factor = indiaEmissionFactors.transport[factorKey];
-  
+
   return {
     co2e_kg: distanceKm * factor,
     factor: factor,
@@ -657,7 +662,7 @@ const getSetupInstructions = () => {
 const testAPIConnections = async () => {
   console.log('\n🔧 Testing API Connections...\n');
   const results = {};
-  
+
   // Test Electricity Maps
   try {
     const gridResult = await getIndiaGridCarbonIntensity('IN');
@@ -670,7 +675,7 @@ const testAPIConnections = async () => {
   } catch (error) {
     results.electricityMaps = { status: '❌ Failed', error: error.message };
   }
-  
+
   // Test Carbon Interface
   try {
     const vehicleResult = await getVehicleEmissions(10, 'petrol_car');
@@ -683,7 +688,7 @@ const testAPIConnections = async () => {
   } catch (error) {
     results.carbonInterface = { status: '❌ Failed', error: error.message };
   }
-  
+
   // Test Grok AI
   try {
     const tipResult = await getQuickTip('energy');
@@ -696,7 +701,7 @@ const testAPIConnections = async () => {
   } catch (error) {
     results.grokAI = { status: '❌ Failed', error: error.message };
   }
-  
+
   console.log('\n📊 Test Results:', JSON.stringify(results, null, 2));
   return results;
 };
@@ -707,24 +712,24 @@ module.exports = {
   getVehicleEmissions,
   getFlightEmissions,
   getDigitalCarbonFootprint,
-  
+
   // Grok AI Recommendations
   getGrokRecommendations,
   getQuickTip,
-  
+
   // India-specific
   getStateElectricityFactor,
   getLPGEmissions,
   getTwoWheelerEmissions,
   getIndianMealEmissions,
-  
+
   // Info & Testing
   getSetupInstructions,
   testAPIConnections,
-  
+
   // Raw factors
   indiaEmissionFactors,
-  
+
   // API Keys (for reference)
   API_KEYS: {
     ELECTRICITY_MAPS: ELECTRICITY_MAPS_API_KEY ? 'Configured' : 'Not Set',
