@@ -6,17 +6,28 @@ node_modules/
 # Testing
 /coverage
 
-# Production
+# Production Build Artifacts
 /build
 /dist
+client/dist
+server/dist
 
 # Misc
 .DS_Store
+
+# Environment Variables (never commit secrets!)
 .env
 .env.local
 .env.development.local
 .env.test.local
 .env.production.local
+server/.env
+client/.env
+
+# But DO commit example files
+!.env.example
+!server/.env.example
+!client/.env.example
 
 # Logs
 npm-debug.log*

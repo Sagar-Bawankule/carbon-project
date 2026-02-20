@@ -45,6 +45,10 @@ const EnhancedCharts = () => {
             } finally {
                 if (mounted) {
                     setLoading(false);
+                    // Fix for Recharts not rendering correctly after navigation
+                    setTimeout(() => {
+                        window.dispatchEvent(new Event('resize'));
+                    }, 100);
                 }
             }
         };
@@ -102,8 +106,8 @@ const EnhancedCharts = () => {
                 <button
                     onClick={() => setActiveChart('donut')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${activeChart === 'donut'
-                            ? 'bg-eco-500 text-white shadow-lg'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ? 'bg-eco-500 text-white shadow-lg'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                 >
                     <HiChartPie className="w-5 h-5" />
@@ -112,8 +116,8 @@ const EnhancedCharts = () => {
                 <button
                     onClick={() => setActiveChart('bar')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${activeChart === 'bar'
-                            ? 'bg-eco-500 text-white shadow-lg'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ? 'bg-eco-500 text-white shadow-lg'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                 >
                     <HiChartBar className="w-5 h-5" />
@@ -122,8 +126,8 @@ const EnhancedCharts = () => {
                 <button
                     onClick={() => setActiveChart('line')}
                     className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-all ${activeChart === 'line'
-                            ? 'bg-eco-500 text-white shadow-lg'
-                            : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                        ? 'bg-eco-500 text-white shadow-lg'
+                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                         }`}
                 >
                     <HiTrendingUp className="w-5 h-5" />

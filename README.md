@@ -175,6 +175,64 @@ Based on EPA, DEFRA, and environmental agency data:
 - [x] Ensure responsive UI across breakpoints
 - [x] Add trend visualization charts
 - [x] Create recommendation engine
+- [x] Token Shop & Rewards System
+- [x] Group Leaderboard Feature
+- [x] Vercel Deployment Ready ✅
+
+## 🚀 Vercel Deployment Guide
+
+This project uses a **monorepo structure** with two separate Vercel deployments:
+- **Frontend** (React/Vite) → deploys from root or `client/` directory
+- **Backend** (Express API) → deploys from `server/` directory
+
+---
+
+### Step 1: Deploy the Backend (API Server)
+
+1. Go to [vercel.com](https://vercel.com) → **Add New Project**
+2. Import the GitHub repo: `Sagar-Bawankule/carbon-project`
+3. Set **Root Directory** → `server`
+4. Framework Preset: **Other**
+5. Add these **Environment Variables** in Vercel dashboard:
+
+| Variable | Value |
+|---|---|
+| `MONGODB_URI` | Your MongoDB Atlas connection string |
+| `JWT_SECRET` | A strong random secret string |
+| `JWT_EXPIRE` | `7d` |
+| `ELECTRICITY_MAPS_API_KEY` | Your API key |
+| `CARBON_INTERFACE_API_KEY` | Your API key |
+| `GROK_API_KEY` | Your Grok API key |
+| `CLIENT_URL` | Your frontend Vercel URL (add after deploying frontend) |
+
+6. Deploy → Copy the deployed URL (e.g., `https://carbon-project-api.vercel.app`)
+
+---
+
+### Step 2: Deploy the Frontend (React App)
+
+1. Go to [vercel.com](https://vercel.com) → **Add New Project** → **Import same repo**
+2. **Root Directory** → leave empty (root `/`) or set to `client`
+3. Build Command: `cd client && npm install && npm run build`
+4. Output Directory: `client/dist`
+5. Add this **Environment Variable**:
+
+| Variable | Value |
+|---|---|
+| `VITE_API_URL` | `https://your-backend.vercel.app/api` |
+
+6. Deploy → Copy frontend URL
+7. Go back to **Backend project settings** → add `CLIENT_URL` = frontend URL → **Redeploy**
+
+---
+
+### MongoDB Atlas Setup (Required for Production)
+
+1. Create a free cluster at [cloud.mongodb.com](https://cloud.mongodb.com)
+2. Create a DB user with read/write permissions
+3. Whitelist IP: `0.0.0.0/0` (allow all — needed for Vercel serverless)
+4. Copy the connection string: `mongodb+srv://user:pass@cluster.mongodb.net/EcoTrack`
+5. Set as `MONGODB_URI` in your Vercel backend environment variables
 
 ## 📝 License
 

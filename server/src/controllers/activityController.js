@@ -2,6 +2,7 @@ const { validationResult } = require('express-validator');
 const Activity = require('../models/Activity');
 const Goal = require('../models/Goal');
 const CalculationEngine = require('../utils/calculationEngine');
+const User = require('../models/User');
 
 // @desc    Create new activity
 // @route   POST /api/activities
@@ -33,6 +34,60 @@ exports.createActivity = async (req, res) => {
     const activityDate = activity.date;
     await updateGoalTotal(req.user._id, activityDate.getMonth() + 1, activityDate.getFullYear());
 
+    // Update Streak
+    const user = await User.findById(req.user._id);
+    const activityDay = new Date(activityDate);
+    activityDay.setHours(0, 0, 0, 0);
+
+    // Initialize streak if missing
+    if (!user.streak) {
+      user.streak = { current: 0, longest: 0, lastLogDate: null };
+    }
+
+    const lastLogDay = user.streak.lastLogDate ? new Date(user.streak.lastLogDate) : null;
+    if (lastLogDay) {
+      lastLogDay.setHours(0, 0, 0, 0);
+    }
+
+    const oneDay = 24 * 60 * 60 * 1000;
+
+    // Check if this is a new day
+    if (!lastLogDay || activityDay.getTime() > lastLogDay.getTime()) {
+      if (lastLogDay && (activityDay.getTime() - lastLogDay.getTime() <= oneDay)) {
+        // Consecutive day
+        user.streak.current += 1;
+      } else if (lastLogDay && (activityDay.getTime() - lastLogDay.getTime() > oneDay)) {
+        // Break in streak, but only if the activity is strictly after the last log. 
+        // If the user logs for today, and last log was 2 days ago, reset.
+        user.streak.current = 1;
+      } else {
+        // First ever log or reset
+        user.streak.current = 1;
+      }
+
+      // Update max streak
+      if (user.streak.current > (user.streak.longest || 0)) {
+        user.streak.longest = user.streak.current;
+      }
+
+      user.streak.lastLogDate = activityDate;
+
+      // Check badges
+      const badges = user.badges || [];
+      if (user.streak.current >= 7 && !badges.includes('7-day-streak')) {
+        badges.push('7-day-streak');
+      }
+      if (user.streak.current >= 30 && !badges.includes('30-day-streak')) {
+        badges.push('30-day-streak');
+      }
+      if (user.streak.current >= 100 && !badges.includes('100-day-streak')) {
+        badges.push('100-day-streak');
+      }
+      user.badges = badges;
+
+      await user.save();
+    }
+
     res.status(201).json({
       success: true,
       activity,
@@ -52,15 +107,15 @@ exports.createActivity = async (req, res) => {
 exports.getActivities = async (req, res) => {
   try {
     const { startDate, endDate, category, limit = 50, page = 1 } = req.query;
-    
+
     const query = { userId: req.user._id };
-    
+
     if (startDate || endDate) {
       query.date = {};
       if (startDate) query.date.$gte = new Date(startDate);
       if (endDate) query.date.$lte = new Date(endDate);
     }
-    
+
     if (category) {
       query.category = category;
     }
@@ -144,7 +199,7 @@ exports.updateActivity = async (req, res) => {
     const newCategory = category || activity.category;
     const newSubCategory = subCategory || activity.subCategory;
     const newValue = value !== undefined ? value : activity.value;
-    
+
     const calculatedCO2 = CalculationEngine.calculate(newCategory, newSubCategory, newValue);
 
     activity = await Activity.findByIdAndUpdate(
@@ -221,10 +276,10 @@ exports.getDailySummary = async (req, res) => {
   try {
     const { date } = req.query;
     const targetDate = date ? new Date(date) : new Date();
-    
+
     const startOfDay = new Date(targetDate);
     startOfDay.setHours(0, 0, 0, 0);
-    
+
     const endOfDay = new Date(targetDate);
     endOfDay.setHours(23, 59, 59, 999);
 

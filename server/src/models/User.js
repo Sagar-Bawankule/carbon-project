@@ -63,7 +63,23 @@ const userSchema = new mongoose.Schema({
   },
   lastRewardClaimDate: {
     type: Date
-  }
+  },
+  streak: {
+    current: {
+      type: Number,
+      default: 0
+    },
+    longest: {
+      type: Number,
+      default: 0
+    },
+    lastLogDate: {
+      type: Date
+    }
+  },
+  badges: [{
+    type: String
+  }]
 });
 
 // Hash password before saving

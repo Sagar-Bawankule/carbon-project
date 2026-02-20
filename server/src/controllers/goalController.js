@@ -154,6 +154,11 @@ exports.getDashboard = async (req, res) => {
       date: { $gte: startOfMonth, $lte: endOfMonth },
     });
 
+    // Get recent activities (global)
+    const recentActivitesList = await Activity.find({ userId: req.user._id })
+      .sort({ date: -1 })
+      .limit(5);
+
     // Calculate category totals
     const categoryTotals = CalculationEngine.calculateTotal(activities);
 
@@ -178,7 +183,7 @@ exports.getDashboard = async (req, res) => {
     // Calculate comparison to previous month
     const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
     const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
-    
+
     const lastMonthActivities = await Activity.find({
       userId: req.user._id,
       date: { $gte: lastMonthStart, $lte: lastMonthEnd },
@@ -208,7 +213,12 @@ exports.getDashboard = async (req, res) => {
           comparisonLabel: comparison >= 0 ? 'increase' : 'decrease',
         },
         recommendations,
-        recentActivities: activities.slice(-5).reverse(),
+        streak: {
+          current: req.user.streak?.current || 0,
+          longest: req.user.streak?.longest || 0,
+          badges: req.user.badges || []
+        },
+        recentActivities: recentActivitesList,
       },
     });
   } catch (error) {

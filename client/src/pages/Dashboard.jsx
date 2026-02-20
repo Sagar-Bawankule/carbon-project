@@ -12,6 +12,8 @@ import TrendChart from '../components/TrendChart';
 import LoadingSpinner from '../components/LoadingSpinner';
 import EnhancedCharts from '../components/EnhancedCharts';
 import RewardsCard from '../components/RewardsCard';
+import StreakCard from '../components/StreakCard';
+import RecentActivities from '../components/RecentActivities';
 
 import {
   HiTrendingUp,
@@ -49,6 +51,10 @@ const Dashboard = () => {
       console.error(error);
     } finally {
       setLoading(false);
+      // Fix for Recharts not rendering correctly after navigation
+      setTimeout(() => {
+        window.dispatchEvent(new Event('resize'));
+      }, 100);
     }
   };
 
@@ -69,7 +75,7 @@ const Dashboard = () => {
     return <LoadingSpinner text="Loading your dashboard..." />;
   }
 
-  const { goal, today, monthly, recommendations } = dashboardData || {};
+  const { goal, today, monthly, recommendations, streak, recentActivities } = dashboardData || {};
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">
@@ -106,36 +112,40 @@ const Dashboard = () => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.1 }}
-            className="card p-6 flex flex-col items-center justify-center"
+            className="p-0 space-y-6"
           >
-            <CarbonDial
-              current={goal?.currentTotal || 0}
-              limit={goal?.monthlyLimit || 500}
-              label="Monthly"
-              size="lg"
-            />
+            <StreakCard streak={streak} />
 
-            {/* Comparison */}
-            {monthly && (
-              <div className="mt-4 flex items-center gap-2 text-sm">
-                {monthly.comparison >= 0 ? (
-                  <>
-                    <HiTrendingUp className="w-5 h-5 text-red-500" />
-                    <span className="text-red-600 font-medium">
-                      {monthly.comparison}% more
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <HiTrendingDown className="w-5 h-5 text-eco-500" />
-                    <span className="text-eco-600 font-medium">
-                      {Math.abs(monthly.comparison)}% less
-                    </span>
-                  </>
-                )}
-                <span className="text-slate-500">than last month</span>
-              </div>
-            )}
+            <div className="card p-6 flex flex-col items-center justify-center">
+              <CarbonDial
+                current={goal?.currentTotal || 0}
+                limit={goal?.monthlyLimit || 500}
+                label="Monthly"
+                size="lg"
+              />
+
+              {/* Comparison */}
+              {monthly && (
+                <div className="mt-4 flex items-center gap-2 text-sm">
+                  {monthly.comparison >= 0 ? (
+                    <>
+                      <HiTrendingUp className="w-5 h-5 text-red-500" />
+                      <span className="text-red-600 font-medium">
+                        {monthly.comparison}% more
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <HiTrendingDown className="w-5 h-5 text-eco-500" />
+                      <span className="text-eco-600 font-medium">
+                        {Math.abs(monthly.comparison)}% less
+                      </span>
+                    </>
+                  )}
+                  <span className="text-slate-500">than last month</span>
+                </div>
+              )}
+            </div>
           </motion.div>
 
           <motion.div
@@ -240,6 +250,10 @@ const Dashboard = () => {
               index={3}
               onClick={() => navigate('/app/input?category=goods')}
             />
+          </div>
+
+          <div className="mt-6"> {/* Add margin-top for spacing */}
+            <RecentActivities activities={recentActivities || []} />
           </div>
         </motion.div>
       </div>

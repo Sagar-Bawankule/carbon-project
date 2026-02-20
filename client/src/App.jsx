@@ -58,11 +58,7 @@ const PublicRoute = ({ children }) => {
   return children;
 };
 
-// Wrapper to force Dashboard remount on navigation (fixes Recharts crash)
-const DashboardWrapper = () => {
-  const location = useLocation();
-  return <Dashboard key={location.key} />;
-};
+
 
 function AppRoutes() {
   return (
@@ -108,7 +104,7 @@ function AppRoutes() {
         <Route index element={<Navigate to="/app/dashboard" replace />} />
         <Route path="dashboard" element={
           <ErrorBoundary>
-            <DashboardWrapper />
+            <Dashboard />
           </ErrorBoundary>
         } />
         <Route path="input" element={<InputActivity />} />
