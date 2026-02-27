@@ -11,6 +11,8 @@ import {
   HiCheck,
   HiArrowRight,
   HiArrowLeft,
+  HiX,
+  HiLightBulb,
 } from 'react-icons/hi';
 
 const categories = [
@@ -82,11 +84,84 @@ const categories = [
   },
 ];
 
+// Step-wise instructions for new users
+const stepInstructions = {
+  1: {
+    title: 'How to choose a category?',
+    emoji: '📂',
+    steps: [
+      { icon: '⚡', text: 'Energy – Electricity bill, LPG cylinder, gas usage at home' },
+      { icon: '🚗', text: 'Transport – Daily commute by bike, car, bus, metro or flight' },
+      { icon: '🍽️', text: 'Food – Meals you eat daily like dal, chicken, paneer, biryani' },
+      { icon: '🛍️', text: 'Shopping – Clothes, electronics, household items you bought' },
+    ],
+    tip: 'Start with what you do the most every day — transport & food are great first entries!',
+  },
+  2: {
+    energy: {
+      title: 'How to log Energy usage?',
+      emoji: '⚡',
+      steps: [
+        { icon: '📄', text: 'Electricity – Check your monthly bill (units/kWh). Divide by 30 for daily use. e.g. 90 kWh/month → enter 3 kWh/day.' },
+        { icon: '🔵', text: 'Propane/LPG – 1 cylinder ≈ 14.2 kg. Enter kg used (e.g. half cylinder = 7 kg).' },
+        { icon: '🔥', text: 'Natural Gas – See your gas meter reading in cubic meters (m³).' },
+        { icon: '🛢️', text: 'Heating Oil – Enter liters consumed from your tank fill-up.' },
+      ],
+      tip: 'Average Indian household uses ~90 kWh/month electricity. Your bill shows exact units used.',
+    },
+    transport: {
+      title: 'How to log Transport?',
+      emoji: '🚗',
+      steps: [
+        { icon: '📍', text: 'Enter the total distance you travelled in km for that trip.' },
+        { icon: '🏍️', text: 'Motorcycle/Scooter – Office 10 km away? Enter 20 km (to & fro).' },
+        { icon: '🚌', text: 'Bus/Metro – Open Google Maps, check the km distance of your route.' },
+        { icon: '✈️', text: 'Flight – Mumbai→Delhi = ~1150 km. Search your route on Google Maps.' },
+      ],
+      tip: 'Google Maps shows distance for any route. Use it to get accurate km values!',
+    },
+    food: {
+      title: 'How to log Food?',
+      emoji: '🍽️',
+      steps: [
+        { icon: '🥩', text: 'Chicken/Meat – 1 serving ≈ 150–200 grams = enter 0.15 to 0.2 kg.' },
+        { icon: '🥛', text: 'Dairy (milk, paneer) – 1 glass milk ≈ 0.25 kg. Paneer portion ≈ 0.1 kg.' },
+        { icon: '🌿', text: 'Vegan Day – Enter "1" for each full day you ate only plant-based food.' },
+        { icon: '🍖', text: 'Meat-Heavy Day – Enter "1" for each day you had meat in 2 or more meals.' },
+      ],
+      tip: 'Even 1 vegan day per week can save ~300 kg CO₂ per year — small changes matter!',
+    },
+    goods: {
+      title: 'How to log Shopping?',
+      emoji: '🛍️',
+      steps: [
+        { icon: '💰', text: 'Enter the amount you spent in Indian Rupees (₹) on the purchase.' },
+        { icon: '👕', text: 'Clothing – Bought a new shirt (₹800)? Enter 800 in the amount field.' },
+        { icon: '📱', text: 'Electronics – New phone for ₹15,000? Enter 15000.' },
+        { icon: '🏠', text: 'Household – Furniture, kitchen appliances, home goods purchase amount.' },
+      ],
+      tip: 'Second-hand buying or repairing old items saves carbon! Only log new purchases.',
+    },
+  },
+  3: {
+    title: 'How to enter the amount?',
+    emoji: '🔢',
+    steps: [
+      { icon: '✍️', text: 'Type the number in the input box — the CO₂ estimate updates live as you type.' },
+      { icon: '📅', text: 'Set the correct date. You can log past activities too (up to today).' },
+      { icon: '💚', text: 'The green box shows your estimated CO₂ impact in real-time.' },
+      { icon: '📝', text: 'Add optional notes like "Office commute" or "Monthly electricity bill" for reference.' },
+    ],
+    tip: 'Not sure about exact numbers? Use an approximation — it still helps track your trends over time!',
+  },
+};
+
 const InputActivity = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   
   const [step, setStep] = useState(1);
+  const [showHelp, setShowHelp] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedSubCategory, setSelectedSubCategory] = useState(null);
   const [value, setValue] = useState('');
@@ -95,6 +170,12 @@ const InputActivity = () => {
   const [loading, setLoading] = useState(false);
   const [emissionFactors, setEmissionFactors] = useState(null);
   const [estimatedCO2, setEstimatedCO2] = useState(0);
+
+  const getInstructions = () => {
+    if (step === 1) return stepInstructions[1];
+    if (step === 2 && selectedCategory) return stepInstructions[2][selectedCategory.id] || stepInstructions[2].energy;
+    return stepInstructions[3];
+  };
 
   useEffect(() => {
     const categoryParam = searchParams.get('category');
@@ -106,6 +187,8 @@ const InputActivity = () => {
       }
     }
     fetchEmissionFactors();
+    // Show help panel by default for new users on first load
+    setShowHelp(true);
   }, [searchParams]);
 
   useEffect(() => {
@@ -385,6 +468,78 @@ const InputActivity = () => {
           />
         ))}
       </div>
+
+      {/* Help Toggle Button */}
+      <div className="flex justify-end mb-3">
+        <button
+          onClick={() => setShowHelp(!showHelp)}
+          className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all border ${
+            showHelp
+              ? 'bg-amber-50 border-amber-300 text-amber-700'
+              : 'bg-white border-slate-200 text-slate-500 hover:border-amber-300 hover:text-amber-600'
+          }`}
+        >
+          <HiLightBulb className="w-4 h-4" />
+          {showHelp ? 'Hide Guide' : '❓ How to fill this?'}
+        </button>
+      </div>
+
+      {/* Instructions Panel */}
+      <AnimatePresence>
+        {showHelp && (
+          <motion.div
+            key={`help-${step}-${selectedCategory?.id}`}
+            initial={{ opacity: 0, y: -8, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: 'auto' }}
+            exit={{ opacity: 0, y: -8, height: 0 }}
+            transition={{ duration: 0.22 }}
+            className="mb-4 overflow-hidden"
+          >
+            {(() => {
+              const instructions = getInstructions();
+              return (
+                <div className="bg-gradient-to-br from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{instructions.emoji}</span>
+                      <h3 className="font-semibold text-amber-800 text-base">{instructions.title}</h3>
+                    </div>
+                    <button
+                      onClick={() => setShowHelp(false)}
+                      className="text-amber-400 hover:text-amber-600 transition-colors p-1 rounded-lg hover:bg-amber-100"
+                    >
+                      <HiX className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Steps */}
+                  <div className="space-y-2 mb-4">
+                    {instructions.steps.map((s, i) => (
+                      <motion.div
+                        key={i}
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.06 }}
+                        className="flex items-start gap-3 bg-white/60 rounded-xl px-3 py-2.5"
+                      >
+                        <span className="text-lg flex-shrink-0">{s.icon}</span>
+                        <p className="text-sm text-amber-900 leading-snug">{s.text}</p>
+                      </motion.div>
+                    ))}
+                  </div>
+
+                  {/* Tip */}
+                  <div className="flex items-start gap-2 bg-amber-100 rounded-xl px-3 py-2.5">
+                    <HiLightBulb className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
+                    <p className="text-xs text-amber-700 font-medium leading-relaxed">{instructions.tip}</p>
+                  </div>
+                </div>
+              );
+            })()}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Form Card */}
       <div className="card p-6 md:p-8">
