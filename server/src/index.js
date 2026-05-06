@@ -51,6 +51,18 @@ app.use('/api/reports', reportRoutes);
 app.use('/api/rewards', rewardRoutes);
 app.use('/api/shop', shopRoutes);
 
+// Root and favicon responses for deployment health checks
+app.get('/', (req, res) => {
+  res.json({
+    success: true,
+    message: 'EcoTrack API is running',
+  });
+});
+
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end();
+});
+
 // Health check
 app.get('/api/health', (req, res) => {
   res.json({ success: true, message: 'EcoTrack API is running' });
