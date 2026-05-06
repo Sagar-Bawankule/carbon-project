@@ -71,6 +71,10 @@ PORT=5000
 MONGODB_URI=mongodb://localhost:27017/EcoTrack
 JWT_SECRET=ecotrack_secret_key_change_in_production
 JWT_EXPIRE=7d
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
+CLIENT_URL=http://localhost:3000
 ```
 
 3. **Start MongoDB:**
@@ -125,6 +129,8 @@ EcoTrack/
 ### Authentication
 - `POST /api/auth/register` - Register new user
 - `POST /api/auth/login` - Login user
+- `GET /api/auth/google` - Start Google OAuth sign-in
+- `GET /api/auth/google/callback` - Google OAuth callback endpoint
 - `GET /api/auth/me` - Get current user
 - `PUT /api/auth/onboarding` - Complete profile setup
 

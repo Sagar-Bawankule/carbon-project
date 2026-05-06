@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
+import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
-import { FaLeaf, FaGoogle, FaGithub } from 'react-icons/fa';
+import { FaLeaf, FaGoogle } from 'react-icons/fa';
 import { 
   HiMail, 
   HiLockClosed, 
@@ -26,8 +27,41 @@ const Login = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithToken } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const processOAuthCallback = async () => {
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get('token');
+      const oauthError = params.get('error');
+
+      if (oauthError) {
+        toast.error(decodeURIComponent(oauthError));
+        navigate('/login', { replace: true });
+        return;
+      }
+
+      if (!token) {
+        return;
+      }
+
+      try {
+        const user = await loginWithToken(token);
+        toast.success('Signed in with Google');
+        navigate(user.onboardingCompleted ? '/app/dashboard' : '/onboarding', { replace: true });
+      } catch (error) {
+        toast.error(error.message || 'Google sign-in failed');
+        navigate('/login', { replace: true });
+      }
+    };
+
+    processOAuthCallback();
+  }, [loginWithToken, navigate]);
+
+  const handleGoogleSignIn = () => {
+    window.location.href = authAPI.getGoogleAuthUrl();
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -149,26 +183,18 @@ const Login = () => {
           </div>
 
           {/* Social Login Buttons */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="mb-6">
             <motion.button
+              type="button"
+              onClick={handleGoogleSignIn}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 
+              className="flex w-full items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 
                          rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:border-slate-300 
                          transition-all shadow-sm"
             >
               <FaGoogle className="text-red-500" />
-              <span className="hidden sm:inline">Google</span>
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-white border border-slate-200 
-                         rounded-xl text-slate-700 font-medium hover:bg-slate-50 hover:border-slate-300 
-                         transition-all shadow-sm"
-            >
-              <FaGithub className="text-slate-800" />
-              <span className="hidden sm:inline">GitHub</span>
+              <span>Google</span>
             </motion.button>
           </div>
 

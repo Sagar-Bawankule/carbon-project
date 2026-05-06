@@ -43,6 +43,7 @@ export const authAPI = {
   login: (data) => api.post('/auth/login', data),
   getMe: () => api.get('/auth/me'),
   completeOnboarding: (data) => api.put('/auth/onboarding', data),
+  getGoogleAuthUrl: () => `${API_URL}/auth/google`,
 };
 
 // Activity API

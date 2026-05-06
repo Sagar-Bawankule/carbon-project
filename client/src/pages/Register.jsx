@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../hooks/useAuth';
+import { authAPI } from '../services/api';
 import toast from 'react-hot-toast';
-import { FaLeaf, FaGoogle, FaGithub } from 'react-icons/fa';
+import { FaLeaf, FaGoogle } from 'react-icons/fa';
 import { 
   HiUser,
   HiMail, 
@@ -34,6 +35,10 @@ const Register = () => {
   const [agreedToTerms, setAgreedToTerms] = useState(false);
   const { register } = useAuth();
   const navigate = useNavigate();
+
+  const handleGoogleSignIn = () => {
+    window.location.href = authAPI.getGoogleAuthUrl();
+  };
 
   const getPasswordStrength = () => {
     if (password.length === 0) return { width: '0%', color: 'bg-slate-200', text: '' };
@@ -102,26 +107,18 @@ const Register = () => {
           </div>
 
           {/* Social Login Buttons */}
-          <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="mb-6">
             <motion.button
+              type="button"
+              onClick={handleGoogleSignIn}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-50 border border-slate-200 
+              className="flex w-full items-center justify-center gap-2 px-4 py-3 bg-slate-50 border border-slate-200 
                          rounded-xl text-slate-700 font-medium hover:bg-slate-100 hover:border-slate-300 
                          transition-all"
             >
               <FaGoogle className="text-red-500" />
-              <span className="hidden sm:inline">Google</span>
-            </motion.button>
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="flex items-center justify-center gap-2 px-4 py-3 bg-slate-50 border border-slate-200 
-                         rounded-xl text-slate-700 font-medium hover:bg-slate-100 hover:border-slate-300 
-                         transition-all"
-            >
-              <FaGithub className="text-slate-800" />
-              <span className="hidden sm:inline">GitHub</span>
+              <span>Google</span>
             </motion.button>
           </div>
 

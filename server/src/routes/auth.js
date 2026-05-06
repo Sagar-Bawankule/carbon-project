@@ -6,6 +6,8 @@ const {
   login,
   getMe,
   completeOnboarding,
+  googleAuthStart,
+  googleAuthCallback,
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 
@@ -24,6 +26,8 @@ const loginValidation = [
 ];
 
 // Routes
+router.get('/google', googleAuthStart);
+router.get('/google/callback', googleAuthCallback);
 router.post('/register', registerValidation, register);
 router.post('/login', loginValidation, login);
 router.get('/me', protect, getMe);

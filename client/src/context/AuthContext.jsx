@@ -46,6 +46,24 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  const loginWithToken = useCallback(async (token) => {
+    try {
+      setError(null);
+      setLoading(true);
+      localStorage.setItem('token', token);
+      const response = await authAPI.getMe();
+      setUser(response.data.user);
+      return response.data.user;
+    } catch (err) {
+      localStorage.removeItem('token');
+      const message = err.response?.data?.message || 'Authentication failed';
+      setError(message);
+      throw new Error(message);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const register = useCallback(async (name, email, password) => {
     try {
       setError(null);
@@ -84,6 +102,7 @@ export const AuthProvider = ({ children }) => {
     loading,
     error,
     login,
+    loginWithToken,
     register,
     logout,
     completeOnboarding,
